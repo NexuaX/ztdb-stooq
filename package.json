@@ -11,6 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2"
+    "cassandra-driver": "^4.6.4",
+    "express": "^4.18.2",
+    "mongodb": "^5.1.0",
+    "pg": "^8.10.0"
   }
 }

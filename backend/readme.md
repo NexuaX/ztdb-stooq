@@ -6,8 +6,20 @@
 or
 `npm run watch`
 
-try to start docker ...?
+start docker
 
 `docker compose up`
 
-go to http://localhost/3000
+to populate cassandra with data:
+
+use endpoint /cassandra/setup once
+
+check if tables were created with /cassandra
+
+go to docker terminal:
+
+write `cqlsh`
+
+then `use ztbd`
+
+then `copy ztbd.index_company_data (index_name, day, opening, highest, lowest, closing, volume) from '/root/data/FILENAME`

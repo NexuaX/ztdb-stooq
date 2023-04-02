@@ -18,7 +18,9 @@ services:
       - "27017:27017"
 
   cassandra:
-    image: cassandra
     ports:
       - "9042:9042"
+    build:
+      context: .
+      dockerfile: docker/cassandra.dockerfile
       

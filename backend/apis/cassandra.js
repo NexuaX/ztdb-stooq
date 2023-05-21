@@ -5,14 +5,9 @@ export const router = express.Router()
 
 const client = new cassandra.Client({
     contactPoints: ["localhost"],
-    localDataCenter: 'datacenter1'
-})
-
-await client.execute(`
-    create keyspace if not exists ztbd 
-    with replication = {'class': 'SimpleStrategy', 'replication_factor': 1}
-`);
-client.keyspace = 'ztbd'
+    localDataCenter: 'datacenter1',
+    keyspace: 'ztbd'
+}) 
 
 router.get("/cassandra", async (req, res, next) => {
     const result = await client.execute("desc tables")
@@ -39,8 +34,7 @@ router.get("/cassandra/setup", async (req, res, next) => {
     result = await client.execute(`
         CREATE TABLE if not exists ztbd.index_company (
             index_name text PRIMARY KEY,
-            full_name text,
-            table_name text
+            full_name text
         )
     `)
     resultList.push(result)
@@ -80,5 +74,19 @@ router.get("/cassandra/company/:index", async (req, res, next) => {
     res.json({
         message: index + " index",
         indexes: result.rows
+    })
+})
+
+router.post("/cassandra/execute", async (req, res, next) => {
+    const query = req.body.query
+
+    let result = "Query not specified!"
+    if (query) {
+        result = await client.execute(query)
+    }
+
+    res.json({
+        message: "Query result",
+        resutl: result
     })
 })

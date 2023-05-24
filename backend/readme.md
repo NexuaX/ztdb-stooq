@@ -1,13 +1,19 @@
 ### How to run
 
+First setup docker.
+
+`docker compose build`
+
+`docker compose up`
+
+Next, run init scripts for databases.
+
+`docker exec CONTAINERNAME bash /root/data/init.sh`
+
+To start backend:
+
 `npm install`
 
 `npm run dev`
 or
 `npm run watch`
-
-try to start docker ...?
-
-`docker compose up`
-
-go to http://localhost/3000

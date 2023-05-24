@@ -4,15 +4,62 @@ import mongodb from "mongodb";
 export const router = express.Router();
 
 const url = "mongodb://root:example@localhost:27017";
-// const client = new mongodb.MongoClient(url);
+const client = new mongodb.MongoClient(url);
+const db = client.db("ztbd");
 
 router.get("/mongodb", async (req, res, next) => {
-  //   const db = client.db("ztbd");
-  //   const result = await db.command({
-  //     serverStatus: 1,
-  //   });
+  // pociągnąć kolekcje
+  const result = await db.command({
+    listCollections: 1,
+    authorizedCollections: true,
+    nameOnly: true,
+  });
 
   res.json({
-    executionTime: Math.round(Math.random() * 100),
+    message: "MongoDB hehe..",
+    info: result,
+  });
+});
+
+router.get("/mongodb/status", async (req, res, next) => {
+  const result = await db.command({
+    serverStatus: 1,
+  });
+  res.json({ message: "Jest jak jest", status: result });
+});
+
+router.get("/mongodb/company", async (req, res, next) => {
+  const collection = await db.collection("indexes");
+  const result = await collection.find().toArray();
+
+  res.json({
+    message: "Result",
+    result: result,
+  });
+});
+
+router.get("/mongodb/company/:index", async (req, res, next) => {
+  // todo
+  const index = req.params.index;
+  const collection = db.collection(index + "_data");
+  const result = await collection.find().limit(10).toArray();
+
+  res.json({
+    message: index + " index",
+    result: result,
+  });
+});
+
+router.post("/mongodb/execute", async (req, res, next) => {
+  const query = req.body.query;
+
+  let result = "Query not specified!";
+  if (query) {
+    result = db.query(query);
+  }
+
+  res.json({
+    message: "Query result",
+    resutl: result,
   });
 });

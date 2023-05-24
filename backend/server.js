@@ -1,7 +1,7 @@
 import express from "express"
 
 export const app = express()
-const PORT = 3000
+const PORT = 8000
 
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);

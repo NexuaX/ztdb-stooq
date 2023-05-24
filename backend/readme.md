@@ -4,7 +4,7 @@ First setup docker.
 
 `docker compose build`
 
-`docker compose up`
+`docker compose up -d`
 
 Next, run init scripts for databases.
 

@@ -29,40 +29,8 @@ router.get("/cassandra/status", async (req, res, next) => {
   });
 });
 
-router.get("/cassandra/setup", async (req, res, next) => {
-  const resultList = [];
-  let result;
-
-  result = await client.execute(`
-        CREATE TABLE if not exists ztbd.index_company (
-            index_name text PRIMARY KEY,
-            full_name text
-        )
-    `);
-  resultList.push(result);
-
-  result = await client.execute(`
-        CREATE TABLE if not exists ztbd.index_company_data (
-            index_name text,
-            day date,
-            closing decimal,
-            highest decimal,
-            lowest decimal,
-            opening decimal,
-            volume decimal,
-            PRIMARY KEY (index_name, day)
-        ) WITH CLUSTERING ORDER BY (day DESC)
-    `);
-  resultList.push(result);
-
-  res.json({
-    message: "Result",
-    result: result,
-  });
-});
-
 router.get("/cassandra/company", async (req, res, next) => {
-  const result = await client.execute("select * from index_company");
+  const result = await client.execute("select * from indexes");
   res.json({
     message: "Available company indexes",
     indexes: result.rows,
@@ -73,13 +41,33 @@ router.get("/cassandra/company/:index", async (req, res, next) => {
   const index = req.params.index;
 
   const result = await client.execute(
-    "select * from index_company_data where index_name = ? limit 20",
+    `select index_name, closing, highest, lowest, opening, volume from index_company_data where index_name = ?`,
     [index]
   );
   res.json({
     message: index + " index",
     indexes: result.rows,
   });
+});
+
+router.get("/cassandra/index", async (req, res, next) => {
+    const result = await client.execute("select * from indexes");
+    res.json({
+        message: "Available indexes",
+        indexes: result.rows,
+    });
+});
+
+router.get("/cassandra/index/:index", async (req, res, next) => {
+    const index = req.params.index;
+
+    const result = await client.execute(
+        "select index_name, closing, highest, lowest, opening, volume from index_data limit 100"
+    );
+    res.json({
+        message: index + " index",
+        indexes: result.rows,
+    });
 });
 
 router.post("/cassandra/execute", async (req, res, next) => {

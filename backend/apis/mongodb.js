@@ -8,7 +8,6 @@ const client = new mongodb.MongoClient(url);
 const db = client.db("ztbd");
 
 router.get("/mongodb", async (req, res, next) => {
-  // pociągnąć kolekcje
   const result = await db.command({
     listCollections: 1,
     authorizedCollections: true,
@@ -30,7 +29,7 @@ router.get("/mongodb/status", async (req, res, next) => {
 
 router.get("/mongodb/company", async (req, res, next) => {
   const collection = await db.collection("indexes");
-  const result = await collection.find().toArray();
+  const result = await collection.find().toArray()
 
   res.json({
     message: "Result",
@@ -39,10 +38,34 @@ router.get("/mongodb/company", async (req, res, next) => {
 });
 
 router.get("/mongodb/company/:index", async (req, res, next) => {
-  // todo
   const index = req.params.index;
   const collection = db.collection(index + "_data");
-  const result = await collection.find().limit(10).toArray();
+  const result = await collection.find().project({
+    "index_name": 1, "closing": 1, "highest": 1, "lowest": 1, "opening": 1, "volume": 1
+  }).toArray();
+
+  res.json({
+    message: index + " index",
+    result: result,
+  });
+});
+
+router.get("/mongodb/index", async (req, res, next) => {
+  const collection = await db.collection("indexes");
+  const result = await collection.find().toArray();
+
+  res.json({
+    message: "Result",
+    result: result,
+  });
+});
+
+router.get("/mongodb/index/:index", async (req, res, next) => {
+  const index = req.params.index;
+  const collection = db.collection(index + "_data");
+  const result = await collection.find().project({
+    "index_name": 1, "closing": 1, "highest": 1, "lowest": 1, "opening": 1, "volume": 1
+  }).toArray();
 
   res.json({
     message: index + " index",

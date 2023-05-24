@@ -36,7 +36,30 @@ router.get("/postgres/company", async (req, res, next) => {
 router.get("/postgres/company/:index", async (req, res, next) => {
   const index = req.params.index;
   const result = await client.query(`
-        select index_data.* from index_data join indexes using(index_id) 
+        select index_name, closing, highest, lowest, opening, volume 
+        from index_company_data join indexes using(index_id) 
+        where index_name = '${index}'
+    `);
+
+  res.json({
+    message: index + " index",
+    result: result.rows,
+  });
+});
+
+router.get("/postgres/index", async (req, res, next) => {
+  const result = await client.query("select * from indexes");
+  res.json({
+    message: "Result",
+    result: result.rows,
+  });
+});
+
+router.get("/postgres/index/:index", async (req, res, next) => {
+  const index = req.params.index;
+  const result = await client.query(`
+        select index_name, closing, highest, lowest, opening, volume 
+        from index_data join indexes using(index_id) 
         where index_name = '${index}'
     `);
 

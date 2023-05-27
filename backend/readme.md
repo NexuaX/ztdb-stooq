@@ -8,6 +8,8 @@ First setup docker.
 
 Next, run init scripts for databases.
 
+(backend-mongo-1, backend-postgres-1, backend-cassandra-1)
+
 `docker exec CONTAINERNAME bash /root/data/init.sh`
 
 To start backend:
@@ -17,3 +19,5 @@ To start backend:
 `npm run dev`
 or
 `npm run watch`
+
+

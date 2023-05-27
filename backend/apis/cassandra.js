@@ -40,10 +40,18 @@ router.get("/cassandra/company", async (req, res, next) => {
 router.get("/cassandra/company/:index", async (req, res, next) => {
   const index = req.params.index;
 
+  const limit = req.query.limit ?? 5;
+
   const result = await client.execute(
-    `select index_name, closing, highest, lowest, opening, volume from index_company_data where index_name = ?`,
+    `select index_name, closing, highest, lowest, opening, volume, garbage
+     from index_company_data where index_name = ? limit ${Number(limit)}`,
     [index]
   );
+
+  result.rows.forEach(row => {
+    row.garbage = row.garbage.length
+  })
+
   res.json({
     message: index + " index",
     indexes: result.rows,
@@ -59,27 +67,37 @@ router.get("/cassandra/index", async (req, res, next) => {
 });
 
 router.get("/cassandra/index/:index", async (req, res, next) => {
-    const index = req.params.index;
+  const index = req.params.index;
 
-    const result = await client.execute(
-        "select index_name, closing, highest, lowest, opening, volume from index_data limit 100"
-    );
-    res.json({
-        message: index + " index",
-        indexes: result.rows,
-    });
+  const result = await client.execute(
+      `select * from index_data limit ${req.query.limit ?? 5}`
+  );
+
+  res.json({
+      message: index + " index",
+      indexes: result.rows,
+  });
 });
 
 router.post("/cassandra/execute", async (req, res, next) => {
   const query = req.body.query;
 
   let result = "Query not specified!";
+  let status = 500;
   if (query) {
-    result = await client.execute(query);
+    try {
+      // eg. query: "insert into indexes (index_name, full_name) values ('test', 'test')"
+      console.log("Cassandra Executing:", query);
+      await client.execute(query);
+      status = 200
+      result = "Query Ok."
+    } catch (err) {
+      result = "Query error. See console."
+      console.log(err)
+    }
   }
 
-  res.json({
-    message: "Query result",
-    resutl: result,
+  res.status(status).json({
+    message: result
   });
 });

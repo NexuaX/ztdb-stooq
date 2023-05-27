@@ -35,11 +35,16 @@ router.get("/postgres/company", async (req, res, next) => {
 
 router.get("/postgres/company/:index", async (req, res, next) => {
   const index = req.params.index;
+  const limit = req.query.limit ?? 5;
   const result = await client.query(`
-        select index_name, closing, highest, lowest, opening, volume 
+        select index_company_data.*
         from index_company_data join indexes using(index_id) 
-        where index_name = '${index}'
+        where index_name = '${index}' limit ${limit}
     `);
+
+  result.rows.forEach(row => {
+    row.garbage = row.garbage.length
+  })
 
   res.json({
     message: index + " index",
@@ -57,11 +62,16 @@ router.get("/postgres/index", async (req, res, next) => {
 
 router.get("/postgres/index/:index", async (req, res, next) => {
   const index = req.params.index;
+  const limit = req.query.limit ?? 5;
   const result = await client.query(`
-        select index_name, closing, highest, lowest, opening, volume 
+        select index_data.* 
         from index_data join indexes using(index_id) 
-        where index_name = '${index}'
+        where index_name = '${index}' limit ${limit}
     `);
+
+  result.rows.forEach(row => {
+    row.garbage = row.garbage.length
+  })
 
   res.json({
     message: index + " index",
@@ -73,12 +83,21 @@ router.post("/postgres/execute", async (req, res, next) => {
   const query = req.body.query;
 
   let result = "Query not specified!";
+  let status = 500;
   if (query) {
-    result = await client.query(query);
+    try {
+      // eg. query: "insert into indexes (index_name, full_name) values ('test', 'test')"
+      console.log("Postgres Executing:", query);
+      await client.query(query);
+      status = 200
+      result = "Query Ok."
+    } catch (err) {
+      result = "Query error. See console."
+      console.log(err)
+    }
   }
 
-  res.json({
-    message: "Query result",
-    resutl: result,
+  res.status(status).json({
+    message: result
   });
 });

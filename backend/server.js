@@ -10,6 +10,7 @@ app.listen(PORT, () => {
 app.set('json spaces', 2)
 
 app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
 
 app.get("/", (req, res, nest) => {
     res.json(

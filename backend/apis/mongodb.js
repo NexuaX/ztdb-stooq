@@ -39,10 +39,13 @@ router.get("/mongodb/company", async (req, res, next) => {
 
 router.get("/mongodb/company/:index", async (req, res, next) => {
   const index = req.params.index;
+  const limit = req.query.limit ?? 5;
   const collection = db.collection(index + "_data");
-  const result = await collection.find().project({
-    "index_name": 1, "closing": 1, "highest": 1, "lowest": 1, "opening": 1, "volume": 1
-  }).toArray();
+  const result = await collection.find().limit(limit).toArray();
+
+  result.forEach(row => {
+    row.garbage = row.garbage.length()
+  })
 
   res.json({
     message: index + " index",
@@ -62,10 +65,13 @@ router.get("/mongodb/index", async (req, res, next) => {
 
 router.get("/mongodb/index/:index", async (req, res, next) => {
   const index = req.params.index;
+  const limit = req.query.limit ?? 5;
   const collection = db.collection(index + "_data");
-  const result = await collection.find().project({
-    "index_name": 1, "closing": 1, "highest": 1, "lowest": 1, "opening": 1, "volume": 1
-  }).toArray();
+  const result = await collection.find().limit(limit).toArray();
+
+  result.forEach(row => {
+    row.garbage = row.garbage.length()
+  })
 
   res.json({
     message: index + " index",
@@ -76,13 +82,22 @@ router.get("/mongodb/index/:index", async (req, res, next) => {
 router.post("/mongodb/execute", async (req, res, next) => {
   const query = req.body.query;
 
-  let result = "Query not specified!";
+  let result = "Query/Collection not specified!";
+  let status = 500
   if (query) {
-    result = db.query(query);
+    try {
+      // eg. query: `db.collection('indexes').insertOne({index_name: 'test'});
+      console.log("Mongo Executing:", query);
+      eval(query)
+      status = 200
+      result = "Query Ok."
+    } catch (err) {
+      result = "Query error. See console."
+      console.log(err)
+    }
   }
 
-  res.json({
-    message: "Query result",
-    resutl: result,
+  res.status(status).json({
+    message: result
   });
 });

@@ -1,9 +1,9 @@
 import axios from "axios";
 import { useCallback, useRef, useState } from "react";
 
-const ENDPOINTS = ["cassandra", "postgres", "mongodb"] as const;
+const ENDPOINTS = ["postgres", "mongodb", "cassandra"] as const;
 
-type Endpoint = typeof ENDPOINTS[number];
+type Endpoint = (typeof ENDPOINTS)[number];
 
 type TestResult = {
   times: number[];
@@ -30,19 +30,24 @@ const INITIAL_VALUE: Result = {
 export const useTestCase = () => {
   const [loading, setLoading] = useState(false);
   const queryNumber = useRef(0);
+  const indexName = useRef("");
 
   const setQueryNumber = (n: number) => (queryNumber.current = n);
+  const setIndexName = (name: string) => (indexName.current = name);
 
   const [result, setResult] = useState<Result | null>(null);
 
-  const makeApiCall = async (endpoint: Endpoint) => {
-    const result = await axios.get<{ executionTime: number }>(`/${endpoint}`);
+  const makeApiCall = async (endpoint: string) => {
+    const startTime = new Date();
+    await axios.get(`/${endpoint}`);
+    const endTime = new Date();
 
-    return result.data.executionTime;
+    const duration = endTime.getTime() - startTime.getTime();
+    return duration;
   };
 
   const makeDatabaseTest = useCallback(
-    async (endpoint: Endpoint) => {
+    async (endpoint: string) => {
       const arr = Array.from({ length: queryNumber.current }, () => 0);
 
       const times = await Promise.all(
@@ -60,14 +65,20 @@ export const useTestCase = () => {
   const trigger = useCallback(async () => {
     setLoading(true);
 
-    const results = await Promise.all(
-      ENDPOINTS.map(async (endpoint) => await makeDatabaseTest(endpoint))
+    const r1 = await makeDatabaseTest(
+      `${ENDPOINTS[0]}/company/${indexName.current}`
+    );
+    const r2 = await makeDatabaseTest(
+      `${ENDPOINTS[1]}/company/${indexName.current}`
+    );
+    const r3 = await makeDatabaseTest(
+      `${ENDPOINTS[2]}/company/${indexName.current}`
     );
 
     setResult({
-      [ENDPOINTS[0]]: results[0],
-      [ENDPOINTS[1]]: results[1],
-      [ENDPOINTS[2]]: results[2],
+      [ENDPOINTS[1]]: r1,
+      [ENDPOINTS[0]]: r2,
+      [ENDPOINTS[2]]: r3,
     });
 
     setLoading(false);
@@ -77,6 +88,7 @@ export const useTestCase = () => {
     loading,
     result,
     setQueryNumber,
+    setIndexName,
     trigger,
   };
 };

@@ -13,10 +13,12 @@ import {
 } from "recharts";
 
 function App() {
-  const { result, trigger, loading, setQueryNumber } = useTestCase();
+  const { result, trigger, loading, setQueryNumber, setIndexName } =
+    useTestCase();
 
   const onSubmit = (data: FormData) => {
     setQueryNumber(data.queriesNumber);
+    setIndexName(data.name);
 
     trigger();
   };

@@ -33,33 +33,6 @@ router.get("/postgres/company", async (req, res, next) => {
   });
 });
 
-router.get("/postgres/index", async (req, res, next) => {
-  const result = await client.query("select * from indexes");
-  res.json({
-    message: "Result",
-    result: result.rows,
-  });
-});
-
-router.get("/postgres/index/:index", async (req, res, next) => {
-  const index = req.params.index;
-  const limit = req.query.limit ?? 100;
-  const result = await client.query(`
-        select index_data.* 
-        from index_data join indexes using(index_id) 
-        where index_name = '${index}' limit ${limit}
-    `);
-
-  result.rows.forEach((row) => {
-    delete row.garbage;
-  });
-
-  res.json({
-    message: index + " index",
-    result: result.rows,
-  });
-});
-
 router.post("/postgres/execute", async (req, res, next) => {
   const query = req.body.query;
 
@@ -83,13 +56,13 @@ router.post("/postgres/execute", async (req, res, next) => {
   });
 });
 
-router.get("/postgres/company_id/:index_id", async (req, res, next) => {
-  const index = req.params.index_id;
+// TEST CASE 1
+router.get("/postgres/index", async (req, res, next) => {
   const limit = req.query.limit ?? 100;
   const result = await client.query(`
-        select index_company_data.*
-        from index_company_data 
-        where index_id = '${index}' limit ${limit}
+        select index_data.* 
+        from index_data join indexes using(index_id) 
+        where limit ${limit}
     `);
 
   result.rows.forEach((row) => {

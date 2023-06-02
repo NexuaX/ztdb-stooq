@@ -37,27 +37,6 @@ router.get("/cassandra/company", async (req, res, next) => {
   });
 });
 
-router.get("/cassandra/index", async (req, res, next) => {
-  const result = await client.execute("select * from indexes");
-  res.json({
-    message: "Available indexes",
-    indexes: result.rows,
-  });
-});
-
-router.get("/cassandra/index/:index", async (req, res, next) => {
-  const index = req.params.index;
-
-  const result = await client.execute(
-    `select * from index_data limit ${req.query.limit ?? 100}`
-  );
-
-  res.json({
-    message: index + " index",
-    indexes: result.rows,
-  });
-});
-
 router.post("/cassandra/execute", async (req, res, next) => {
   const query = req.body.query;
 
@@ -78,6 +57,22 @@ router.post("/cassandra/execute", async (req, res, next) => {
 
   res.status(status).json({
     message: result,
+  });
+});
+
+// TEST CASE 1
+router.get("/cassandra/index", async (req, res, next) => {
+  const result = await client.execute(
+    `select * from index_data limit ${req.query.limit ?? 100}`
+  );
+
+  result.rows.forEach((row) => {
+    delete row.garbage;
+  });
+
+  res.json({
+    message: index + " index",
+    indexes: result.rows,
   });
 });
 

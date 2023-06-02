@@ -37,32 +37,6 @@ router.get("/mongodb/company", async (req, res, next) => {
   });
 });
 
-router.get("/mongodb/index", async (req, res, next) => {
-  const collection = await db.collection("indexes");
-  const result = await collection.find().toArray();
-
-  res.json({
-    message: "Result",
-    result: result,
-  });
-});
-
-router.get("/mongodb/index/:index", async (req, res, next) => {
-  const index = req.params.index;
-  const limit = req.query.limit ?? 100;
-  const collection = db.collection(index + "_data");
-  const result = await collection.find().limit(limit).toArray();
-
-  result.forEach((row) => {
-    row.garbage = row.garbage.length();
-  });
-
-  res.json({
-    message: index + " index",
-    result: result,
-  });
-});
-
 router.post("/mongodb/execute", async (req, res, next) => {
   const query = req.body.query;
 
@@ -82,6 +56,22 @@ router.post("/mongodb/execute", async (req, res, next) => {
 
   res.status(status).json({
     message: result,
+  });
+});
+
+// TEST CASE 1
+router.get("/mongodb/index", async (req, res, next) => {
+  const limit = req.query.limit ?? 100;
+  const collection = db.collection("spx_d_data");
+  const result = await collection.find().limit(limit).toArray();
+
+  result.rows.forEach((row) => {
+    delete row.garbage;
+  });
+
+  res.json({
+    message: index + " index",
+    result: result,
   });
 });
 

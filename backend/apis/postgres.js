@@ -58,7 +58,7 @@ router.post("/postgres/execute", async (req, res, next) => {
 
 // TEST CASE 1
 router.get("/postgres/index", async (req, res, next) => {
-  const limit = req.query.limit ?? 100;
+  const limit = Number(req.query.limit) ?? 100;
   const result = await client.query(`
         select index_data.* 
         from index_data join indexes using(index_id) 
@@ -78,7 +78,7 @@ router.get("/postgres/index", async (req, res, next) => {
 // TEST CASE 2
 router.get("/postgres/company/:index", async (req, res, next) => {
   const index = req.params.index;
-  const limit = req.query.limit ?? 100;
+  const limit = Number(req.query.limit) ?? 100;
   const result = await client.query(`
         select index_company_data.*
         from index_company_data join indexes using(index_id) 
@@ -98,7 +98,7 @@ router.get("/postgres/company/:index", async (req, res, next) => {
 // TEST CASE 3
 router.get("/postgres/company/:index/sorted", async (req, res, next) => {
   const index = req.params.index;
-  const limit = req.query.limit ?? 100;
+  const limit = Number(req.query.limit) ?? 100;
   const result = await client.query(`
         select index_company_data.*
         from index_company_data join indexes using(index_id) 
@@ -168,7 +168,7 @@ router.post("/postgres/company/:index/update", async (req, res, next) => {
   const index = req.params.index;
 
   const date = req.body.date;
-  const volume = req.body.volume;
+  const volume = Number(req.body.volume);
 
   const result = await client.query(`
       update index_company_data set volume = ${volume} 

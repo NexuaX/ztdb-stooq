@@ -61,7 +61,7 @@ router.post("/mongodb/execute", async (req, res, next) => {
 
 // TEST CASE 1
 router.get("/mongodb/index", async (req, res, next) => {
-  const limit = req.query.limit ?? 100;
+  const limit = Number(req.query.limit) ?? 100;
   const collection = db.collection("spx_d_data");
   const result = await collection.find().limit(limit).toArray();
 
@@ -78,7 +78,7 @@ router.get("/mongodb/index", async (req, res, next) => {
 // TEST CASE 2
 router.get("/mongodb/company/:index", async (req, res, next) => {
   const index = req.params.index;
-  const limit = req.query.limit ?? 100;
+  const limit = Number(req.query.limit) ?? 100;
   const collection = db.collection(index + "_data");
   const result = await collection.find().limit(limit).toArray();
 
@@ -95,7 +95,7 @@ router.get("/mongodb/company/:index", async (req, res, next) => {
 // TEST CASE 3
 router.get("/mongodb/company/:index/sorted", async (req, res, next) => {
   const index = req.params.index;
-  const limit = req.query.limit ?? 100;
+  const limit = Number(req.query.limit) ?? 100;
   const collection = db.collection(index + "_data");
   const result = await collection
     .find()
@@ -164,7 +164,7 @@ router.post("/mongodb/company/:index/update", async (req, res, next) => {
   const index = req.params.index;
 
   const date = req.body.date;
-  const volume = req.body.volume;
+  const volume = Number(req.body.volume);
 
   const collection = db.collection(index + "_data");
   const result = await collection.updateOne(

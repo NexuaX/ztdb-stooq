@@ -63,7 +63,7 @@ router.post("/cassandra/execute", async (req, res, next) => {
 // TEST CASE 1
 router.get("/cassandra/index", async (req, res, next) => {
   const result = await client.execute(
-    `select * from index_data limit ${req.query.limit ?? 100}`
+    `select * from index_data limit ${Number(req.query.limit) ?? 100}`
   );
 
   result.rows.forEach((row) => {
@@ -80,7 +80,7 @@ router.get("/cassandra/index", async (req, res, next) => {
 router.get("/cassandra/company/:index", async (req, res, next) => {
   const index = req.params.index;
 
-  const limit = req.query.limit ?? 100;
+  const limit = Number(req.query.limit) ?? 100;
 
   const result = await client.execute(
     `select index_name, day, closing, highest, lowest, opening, volume, garbage
@@ -94,15 +94,15 @@ router.get("/cassandra/company/:index", async (req, res, next) => {
 
   res.json({
     message: index + " index",
-    indexes: result.rows,
+    result: result.rows,
   });
 });
 
 //TEST CASE 3
-router.get("/cassandra/company/:index", async (req, res, next) => {
+router.get("/cassandra/company/:index/sorted", async (req, res, next) => {
   const index = req.params.index;
 
-  const limit = req.query.limit ?? 100;
+  const limit = Number(req.query.limit) ?? 100;
 
   const result = await client.execute(
     `select index_name, day, closing, highest, lowest, opening, volume, garbage
@@ -176,7 +176,7 @@ router.post("/cassandra/company/:index/update", async (req, res, next) => {
   const index = req.params.index;
 
   const date = req.body.date;
-  const volume = req.body.volume;
+  const volume = Number(req.body.volume);
 
   const result = await client.execute(
     `

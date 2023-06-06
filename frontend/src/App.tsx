@@ -1,70 +1,31 @@
-import React, { useMemo } from "react";
-import { useTestCase } from "./hooks/useTestCase";
-import { Form, FormData } from "./components/Form";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Bar,
-  BarChart,
-  Legend,
-} from "recharts";
+import { useState } from "react";
+import { TestCase1 } from "./testCases/testCase1";
+import { TestCase2 } from "./testCases/testCase2";
+import { TestCase3 } from "./testCases/testCase3";
+import { TestCase4 } from "./testCases/testCase4";
+import { TestCase5 } from "./testCases/testCase5";
+import { TestCase6 } from "./testCases/testCase6";
+import { TestCase7 } from "./testCases/testCase7";
+
+const TestCases: Record<string, JSX.Element> = {
+  TestCase1: <TestCase1 />,
+  TestCase2: <TestCase2 />,
+  TestCase3: <TestCase3 />,
+  TestCase4: <TestCase4 />,
+  TestCase5: <TestCase5 />,
+  TestCase6: <TestCase6 />,
+  TestCase7: <TestCase7 />,
+};
 
 function App() {
-  const { result, trigger, loading, setQueryNumber, setIndexName } =
-    useTestCase();
-
-  const onSubmit = (data: FormData) => {
-    setQueryNumber(data.queriesNumber);
-    setIndexName(data.name);
-
-    trigger();
-  };
-
-  const transformedResults = useMemo(() => {
-    if (!result) return [];
-    const dataCass = result.cassandra.times.map((v, idx) => ({
-      name: idx,
-      cassandra: v,
-    }));
-    const dataPg = result.postgres.times.map((v) => ({
-      postgres: v,
-    }));
-    const dataMongo = result.mongodb.times.map((v) => ({
-      mongodb: v,
-    }));
-
-    const res = [];
-
-    for (let i = 0; i < dataCass.length; i++) {
-      res.push({
-        ...dataCass[i],
-        ...dataPg[i],
-        ...dataMongo[i],
-      });
-    }
-
-    return res;
-  }, [result]);
-
-  const averages = useMemo(() => {
-    if (!result) return [];
-    return [
-      { name: "Postgres", averageTime: result.postgres.averageTime },
-      { name: "MongoDB", averageTime: result.mongodb.averageTime },
-      { name: "Cassandra", averageTime: result.cassandra.averageTime },
-    ];
-  }, [result]);
+  const [testCase, setTestCase] = useState<string | null>(null);
 
   return (
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
-      <h1>ZTBD project</h1>
+      <h1>Porównanie wydajności systemów bazodanowych</h1>
 
-      <Form onSubmit={onSubmit} />
       <div
         style={{
           height: 2,
@@ -75,45 +36,68 @@ function App() {
         }}
       />
       <div>
-        {loading && <p>loading... </p>}
-
-        {result && (
+        {testCase ? (
           <>
-            <h3>Averages</h3>
-            <BarChart
-              width={600}
-              height={300}
-              data={averages}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
+            <button
+              onClick={() => setTestCase(null)}
+              style={{ cursor: "pointer" }}
             >
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="averageTime" fill="#8884d8" />
-            </BarChart>
-
-            <h3>Subsequent Calls</h3>
-
-            <LineChart
-              width={600}
-              height={300}
-              data={transformedResults}
-              margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
-            >
-              <Line type="monotone" dataKey="cassandra" stroke="#8884d8" />
-              <Line type="monotone" dataKey="postgres" stroke="#2398f1" />
-              <Line type="monotone" dataKey="mongodb" stroke="#de1414" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-            </LineChart>
+              X
+            </button>
+            {TestCases[testCase]}
           </>
+        ) : (
+          <div>
+            <div
+              role="button"
+              onClick={() => setTestCase("TestCase1")}
+              style={{ padding: 8, cursor: "pointer" }}
+            >
+              <h3>Test case 1 - Select na danych bez porządku</h3>
+            </div>
+            <div
+              role="button"
+              onClick={() => setTestCase("TestCase2")}
+              style={{ padding: 8, cursor: "pointer" }}
+            >
+              <h3>Test case 2 - Select na danych wraz z sortowaniem</h3>
+            </div>
+            <div
+              role="button"
+              onClick={() => setTestCase("TestCase3")}
+              style={{ padding: 8, cursor: "pointer" }}
+            >
+              <h3>Test case 3 - Obliczenia średnich</h3>
+            </div>
+            <div
+              role="button"
+              onClick={() => setTestCase("TestCase4")}
+              style={{ padding: 8, cursor: "pointer" }}
+            >
+              <h3>Test case 4 - Filtrowanie danych</h3>
+            </div>
+            <div
+              role="button"
+              onClick={() => setTestCase("TestCase5")}
+              style={{ padding: 8, cursor: "pointer" }}
+            >
+              <h3>Test case 5 - Update wartości pola</h3>
+            </div>
+            <div
+              role="button"
+              onClick={() => setTestCase("TestCase6")}
+              style={{ padding: 8, cursor: "pointer" }}
+            >
+              <h3>Test case 6 - Usuwanie wartości z przedziału</h3>
+            </div>
+            <div
+              role="button"
+              onClick={() => setTestCase("TestCase7")}
+              style={{ padding: 8, cursor: "pointer" }}
+            >
+              <h3>Test case 7 - Dodanie nowych wartości</h3>
+            </div>
+          </div>
         )}
       </div>
     </div>

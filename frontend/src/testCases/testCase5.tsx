@@ -1,33 +1,36 @@
 import { useForm } from "react-hook-form";
+import { useGetTestCase } from "../hooks/useGetTestCase";
 import { XAxis, YAxis, Tooltip, LineChart, Line, Legend } from "recharts";
 import { format, sub } from "date-fns";
 import { DATABASES } from "../hooks/types";
-import { usePostTestCase } from "../hooks/usePostTestCase";
 import { Spinner } from "../components/spinner";
 import { Table } from "../components/table";
 import { capitalise } from "../utils/capitalise";
+import ReactApexChart from "react-apexcharts";
 
 export type FormData = {
   name: string;
   queriesNumber: number;
-  date: string;
+  startDate: string;
+  endDate: string;
 };
 
 export const TestCase5 = () => {
-  const { register, handleSubmit } = useForm<FormData>();
+  const { register, handleSubmit, getValues } = useForm<FormData>();
 
-  const { loading, trigger, result, transformedResults } = usePostTestCase();
+  const { loading, trigger, result, rawData, transformedResults } =
+    useGetTestCase();
 
   const handler = handleSubmit((data) => {
-    trigger(`${data.name}/update`, Number(data.queriesNumber), () => ({
-      date: data.date,
-      volume: Math.round(Math.random() * 10000),
-    }));
+    trigger(
+      `${data.name}/filter?start_date=${data.startDate}&end_date=${data.endDate}`,
+      Number(data.queriesNumber)
+    );
   });
 
   return (
     <div>
-      <h1>Test case 5 - Update wartości pola</h1>
+      <h1>Test case 5 - Filtrowanie danych</h1>
 
       <form
         onSubmit={handler}
@@ -48,14 +51,20 @@ export const TestCase5 = () => {
         </div>
 
         <div>
-          <label>Data: </label>
+          <label>Początkowa data: </label>
           <input
             type="date"
-            {...register("date")}
-            defaultValue={format(
-              sub(new Date(), { years: 3, days: 4 }),
-              "yyyy-MM-dd"
-            )}
+            {...register("startDate")}
+            defaultValue={format(sub(new Date(), { years: 3 }), "yyyy-MM-dd")}
+          />
+        </div>
+
+        <div>
+          <label>Końcowa data: </label>
+          <input
+            type="date"
+            {...register("endDate")}
+            defaultValue={format(sub(new Date(), { years: 1 }), "yyyy-MM-dd")}
           />
         </div>
 
@@ -116,6 +125,41 @@ export const TestCase5 = () => {
             <Tooltip />
             <Legend />
           </LineChart>
+
+          <h3>Zwrócone dane</h3>
+          {rawData && (
+            <ReactApexChart
+              type="candlestick"
+              height={350}
+              options={{
+                chart: {
+                  id: "tickerChart",
+                  type: "candlestick" as const,
+                  height: 350,
+                },
+                title: {
+                  text: `Notowania dla ${getValues("name") ?? ""}`,
+                  align: "left" as const,
+                },
+                xaxis: {
+                  type: "datetime" as const,
+                },
+              }}
+              series={[
+                {
+                  data: rawData.map((ticker) => ({
+                    x: ticker.day,
+                    y: [
+                      ticker.opening,
+                      ticker.highest,
+                      ticker.lowest,
+                      ticker.closing,
+                    ],
+                  })),
+                },
+              ]}
+            />
+          )}
         </>
       )}
     </div>

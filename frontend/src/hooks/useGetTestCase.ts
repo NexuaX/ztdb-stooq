@@ -53,20 +53,24 @@ export const useGetTestCase = () => {
   );
 
   const trigger = useCallback(
-    async (url: string, requestsNumber: number) => {
+    async (
+      url: string,
+      requestsNumber: number,
+      middle: "company" | "index" = "company"
+    ) => {
       setLoading(true);
       isRawDataSet.current = false;
 
       const r1 = await makeDatabaseTest(
-        `${DATABASES[0]}/company/${url}`,
+        `${DATABASES[0]}/${middle}/${url}`,
         requestsNumber
       );
       const r2 = await makeDatabaseTest(
-        `${DATABASES[1]}/company/${url}`,
+        `${DATABASES[1]}/${middle}/${url}`,
         requestsNumber
       );
       const r3 = await makeDatabaseTest(
-        `${DATABASES[2]}/company/${url}`,
+        `${DATABASES[2]}/${middle}/${url}`,
         requestsNumber
       );
 

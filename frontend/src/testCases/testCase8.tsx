@@ -1,6 +1,5 @@
 import { useForm } from "react-hook-form";
 import { XAxis, YAxis, Tooltip, LineChart, Line, Legend } from "recharts";
-import { format, sub } from "date-fns";
 import { DATABASES } from "../hooks/types";
 import { usePostTestCase } from "../hooks/usePostTestCase";
 import { Spinner } from "../components/spinner";
@@ -9,25 +8,39 @@ import { capitalise } from "../utils/capitalise";
 
 export type FormData = {
   name: string;
-  queriesNumber: number;
-  date: string;
+  data: string;
 };
 
-export const TestCase6 = () => {
+export const TestCase8 = () => {
   const { register, handleSubmit } = useForm<FormData>();
 
   const { loading, trigger, result, transformedResults } = usePostTestCase();
 
   const handler = handleSubmit((data) => {
-    trigger(`${data.name}/update`, Number(data.queriesNumber), () => ({
-      date: data.date,
-      volume: Math.round(Math.random() * 10000),
-    }));
+    const lines = data.data.split("\n");
+
+    const payloads = lines.map((line) => {
+      const [day, closing, highest, lowest, opening, volume] = line.split(",");
+      return {
+        day,
+        close: Number(closing),
+        high: Number(highest),
+        low: Number(lowest),
+        open: Number(opening),
+        volume: Number(volume),
+      };
+    });
+
+    trigger(
+      `${data.name}/insert`,
+      payloads.length,
+      (idx: number) => payloads[idx]
+    );
   });
 
   return (
     <div>
-      <h1>Test case 6 - Update wartości pola</h1>
+      <h1>Test case 8 - Dodanie nowych wartości</h1>
 
       <form
         onSubmit={handler}
@@ -38,25 +51,9 @@ export const TestCase6 = () => {
           <input {...register("name")} defaultValue="amd_us" />
         </div>
 
-        <div>
-          <label>Liczba zapytań do wykonania: </label>
-          <input
-            type="number"
-            {...register("queriesNumber")}
-            defaultValue={10}
-          />
-        </div>
-
-        <div>
-          <label>Data: </label>
-          <input
-            type="date"
-            {...register("date")}
-            defaultValue={format(
-              sub(new Date(), { years: 3, days: 4 }),
-              "yyyy-MM-dd"
-            )}
-          />
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <label>Dane w formacie csv: </label>
+          <textarea {...register("data")} style={{ minHeight: 150 }} />
         </div>
 
         <button type="submit" style={{ width: 100 }}>

@@ -5,10 +5,12 @@ import { DATABASES } from "../hooks/types";
 import { Spinner } from "../components/spinner";
 import { Table } from "../components/table";
 import { capitalise } from "../utils/capitalise";
+import ReactApexChart from "react-apexcharts";
 
 export type FormData = {
   name: string;
   queriesNumber: number;
+  limit?: number;
 };
 
 export const TestCase3 = () => {
@@ -18,12 +20,15 @@ export const TestCase3 = () => {
     useGetTestCase();
 
   const handler = handleSubmit((data) => {
-    trigger(`${data.name}/avg`, Number(data.queriesNumber));
+    trigger(
+      `${data.name}/sorted?limit=${data.limit ? Number(data.limit) : 100}`,
+      Number(data.queriesNumber)
+    );
   });
 
   return (
     <div>
-      <h1>Test case 3 - Obliczenia średnich</h1>
+      <h1>Test case 3 - Select na danych wraz z sortowaniem</h1>
 
       <form
         onSubmit={handler}
@@ -41,6 +46,11 @@ export const TestCase3 = () => {
             {...register("queriesNumber")}
             defaultValue={10}
           />
+        </div>
+
+        <div>
+          <label>Ilość rekordów: </label>
+          <input type="number" {...register("limit")} defaultValue={100} />
         </div>
 
         <button type="submit" style={{ width: 100 }}>
@@ -100,10 +110,40 @@ export const TestCase3 = () => {
               <Legend />
             </LineChart>
 
-            <h3>Raw data</h3>
-            <div>
-              <pre>{JSON.stringify(rawData, null, 2)}</pre>
-            </div>
+            <h3>Zwrócone dane</h3>
+            {rawData && (
+              <ReactApexChart
+                type="candlestick"
+                height={350}
+                options={{
+                  chart: {
+                    id: "tickerChart",
+                    type: "candlestick" as const,
+                    height: 350,
+                  },
+                  title: {
+                    text: `Notowania dla ${getValues("name") ?? ""}`,
+                    align: "left" as const,
+                  },
+                  xaxis: {
+                    type: "datetime" as const,
+                  },
+                }}
+                series={[
+                  {
+                    data: rawData.map((ticker) => ({
+                      x: ticker.day,
+                      y: [
+                        ticker.opening,
+                        ticker.highest,
+                        ticker.lowest,
+                        ticker.closing,
+                      ],
+                    })),
+                  },
+                ]}
+              />
+            )}
           </>
         )}
       </form>

@@ -71,7 +71,6 @@ router.get("/cassandra/index", async (req, res, next) => {
   });
 
   res.json({
-    message: index + " index",
     indexes: result.rows,
   });
 });

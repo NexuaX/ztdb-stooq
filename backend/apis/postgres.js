@@ -62,7 +62,7 @@ router.get("/postgres/index", async (req, res, next) => {
   const result = await client.query(`
         select index_data.* 
         from index_data join indexes using(index_id) 
-        where limit ${limit}
+        limit ${limit}
     `);
 
   result.rows.forEach((row) => {
@@ -70,7 +70,6 @@ router.get("/postgres/index", async (req, res, next) => {
   });
 
   res.json({
-    message: index + " index",
     result: result.rows,
   });
 });

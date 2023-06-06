@@ -1,46 +1,39 @@
 import { useForm } from "react-hook-form";
 import { XAxis, YAxis, Tooltip, LineChart, Line, Legend } from "recharts";
+import { eachDayOfInterval, format, sub } from "date-fns";
 import { DATABASES } from "../hooks/types";
-import { usePostTestCase } from "../hooks/usePostTestCase";
+import { useDeleteTestCase } from "../hooks/useDeleteTestCase";
 import { Spinner } from "../components/spinner";
 import { Table } from "../components/table";
 import { capitalise } from "../utils/capitalise";
 
 export type FormData = {
   name: string;
-  data: string;
+  startDate: string;
+  endDate: string;
 };
 
 export const TestCase7 = () => {
   const { register, handleSubmit } = useForm<FormData>();
 
-  const { loading, trigger, result, transformedResults } = usePostTestCase();
+  const { loading, trigger, result, transformedResults } = useDeleteTestCase();
 
   const handler = handleSubmit((data) => {
-    const lines = data.data.split("\n");
-
-    const payloads = lines.map((line) => {
-      const [day, closing, highest, lowest, opening, volume] = line.split(",");
-      return {
-        day,
-        close: Number(closing),
-        high: Number(highest),
-        low: Number(lowest),
-        open: Number(opening),
-        volume: Number(volume),
-      };
+    const interval = eachDayOfInterval({
+      start: new Date(data.startDate),
+      end: new Date(data.endDate),
     });
 
-    trigger(
-      `${data.name}/insert`,
-      payloads.length,
-      (idx: number) => payloads[idx]
+    const urls = interval.map(
+      (date) => `company/${data.name}?date=${format(date, "yyyy-MM-dd")}`
     );
+
+    trigger(urls);
   });
 
   return (
     <div>
-      <h1>Test case 7 - Dodanie nowych wartości</h1>
+      <h1>Test case 7 - Usuwanie wartości z przedziału</h1>
 
       <form
         onSubmit={handler}
@@ -51,11 +44,26 @@ export const TestCase7 = () => {
           <input {...register("name")} defaultValue="amd_us" />
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <label>Dane w formacie csv: </label>
-          <textarea {...register("data")} style={{ minHeight: 150 }} />
+        <div>
+          <label>Początkowa data: </label>
+          <input
+            type="date"
+            {...register("startDate")}
+            defaultValue={format(
+              sub(new Date(), { years: 1, days: 10 }),
+              "yyyy-MM-dd"
+            )}
+          />
         </div>
 
+        <div>
+          <label>Końcowa data: </label>
+          <input
+            type="date"
+            {...register("endDate")}
+            defaultValue={format(sub(new Date(), { years: 1 }), "yyyy-MM-dd")}
+          />
+        </div>
         <button type="submit" style={{ width: 100 }}>
           Wykonaj
         </button>

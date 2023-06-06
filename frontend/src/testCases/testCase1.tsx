@@ -8,37 +8,32 @@ import { capitalise } from "../utils/capitalise";
 import ReactApexChart from "react-apexcharts";
 
 export type FormData = {
-  name: string;
   queriesNumber: number;
   limit?: number;
 };
 
 export const TestCase1 = () => {
-  const { register, handleSubmit, getValues } = useForm<FormData>();
+  const { register, handleSubmit } = useForm<FormData>();
 
   const { loading, trigger, result, rawData, transformedResults } =
     useGetTestCase();
 
   const handler = handleSubmit((data) => {
     trigger(
-      `${data.name}?limit=${data.limit ? Number(data.limit) : 100}`,
-      Number(data.queriesNumber)
+      `?limit=${data.limit ? Number(data.limit) : 100}`,
+      Number(data.queriesNumber),
+      "index"
     );
   });
 
   return (
     <div>
-      <h1>Test case 1 - Select na danych bez porządku</h1>
+      <h1>Test case 1 - Prosty Select</h1>
 
       <form
         onSubmit={handler}
         style={{ display: "flex", flexDirection: "column", gap: "16px" }}
       >
-        <div>
-          <label>Nazwa aktywu: </label>
-          <input {...register("name")} defaultValue="amd_us" />
-        </div>
-
         <div>
           <label>Liczba zapytań do wykonania: </label>
           <input
@@ -121,10 +116,6 @@ export const TestCase1 = () => {
                   id: "tickerChart",
                   type: "candlestick" as const,
                   height: 350,
-                },
-                title: {
-                  text: `Notowania dla ${getValues("name") ?? ""}`,
-                  align: "left" as const,
                 },
                 xaxis: {
                   type: "datetime" as const,

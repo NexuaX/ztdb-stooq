@@ -65,12 +65,11 @@ router.get("/mongodb/index", async (req, res, next) => {
   const collection = db.collection("spx_d_data");
   const result = await collection.find().limit(limit).toArray();
 
-  result.rows.forEach((row) => {
+  result.forEach((row) => {
     delete row.garbage;
   });
 
   res.json({
-    message: index + " index",
     result: result,
   });
 });
